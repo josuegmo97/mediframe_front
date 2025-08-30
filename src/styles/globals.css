@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Backgrounds */
+  --color-background: #F1F4F2;
+  --color-surface: #FFFFFF;
+  
+  /* Primary */
+  --color-primary: #9DB582;
+  --color-on-primary: #FFFFFF;
+  
+  /* Secondary */
+  --color-secondary: #73AFDC;
+  --color-on-secondary: #FFFFFF;
+  
+  /* Tertiary */
+  --color-tertiary: #82947B;
+  --color-on-tertiary: #FFFFFF;
+  
+  /* Text */
+  --color-text-primary: #2E2E2E;
+  --color-text-secondary: #5A5A5A;
+  --color-text-accent: #9DB582;
+  --color-text-accent-blue: #A6BC8E;
+  --color-text-disabled: #9AA3A0;
+  
+  /* Inputs */
+  --color-input-bg: #FFFFFF;
+  --color-input-text: #2E2E2E;
+  --color-input-border: #CBD3D0;
+  
+  /* Borders */
+  --color-border: #D6DAD7;
+  --color-border-hover: #A6BC8E;
+  
+  /* States */
+  --color-disabled: #E2E5E2;
+  --color-error: #D9534F;
+  --color-success: #9DB582;
+  --color-warning: #F39C12;
+  --color-info: #73AFDC;
+  
+  /* Font */
+  --font-family: 'Urbanist', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes */
+.border-3 {
+  border-width: 3px;
+}
