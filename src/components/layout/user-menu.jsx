@@ -50,7 +50,7 @@ export function UserMenu({ expanded = false, className }) {
           <p className="truncate text-xs text-fg-muted">@{user.username}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild icon={<UserCircle />}>
+        <DropdownMenuItem asChild>
           <Link to="/perfil">
             <UserCircle />
             Mi perfil

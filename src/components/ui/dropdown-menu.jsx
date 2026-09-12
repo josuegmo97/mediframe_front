@@ -31,15 +31,23 @@ export const DropdownMenuContent = forwardRef(function DropdownMenuContent({ cla
 const itemClassName =
   'relative flex min-h-touch cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm outline-none transition-colors data-[highlighted]:bg-surface-2 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 md:min-h-0 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&_svg]:text-fg-muted'
 
-export const DropdownMenuItem = forwardRef(function DropdownMenuItem({ className, destructive, icon, children, ...props }, ref) {
+export const DropdownMenuItem = forwardRef(function DropdownMenuItem({ className, destructive, icon, asChild = false, children, ...props }, ref) {
   return (
     <DropdownMenuPrimitive.Item
       ref={ref}
+      asChild={asChild}
       className={cn(itemClassName, destructive && 'text-danger-text data-[highlighted]:bg-danger/10 [&_svg]:text-danger-text', className)}
       {...props}
     >
-      {icon}
-      {children}
+      {/* Con asChild, Slot exige un único hijo: el icono debe ir dentro de ese hijo */}
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {icon}
+          {children}
+        </>
+      )}
     </DropdownMenuPrimitive.Item>
   )
 })
