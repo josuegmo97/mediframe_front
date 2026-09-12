@@ -2,10 +2,25 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <title>MediFrame - Sistema de Gestión Médica</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F1F4F2" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141816" />
+    <meta name="description" content="Panel de administración de MediFrame: usuarios, licencias, instalaciones y soporte." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>MediFrame Admin</title>
+    <script>
+      // Aplica el tema antes del primer render para evitar parpadeo.
+      (function () {
+        try {
+          var stored = localStorage.getItem('mf.theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var dark = stored === 'dark' || ((!stored || stored === 'system') && prefersDark);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) { /* storage bloqueado: usar claro */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

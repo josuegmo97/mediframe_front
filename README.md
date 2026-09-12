@@ -1,270 +1,113 @@
-# MediFrame Dashboard
+# MediFrame Admin
 
-Dashboard médico profesional con React + Vite + TanStack Query para gestión de usuarios y licencias de dispositivos médicos.
+Panel de administración web de **MediFrame** (Optitronic). Lo usa el equipo de Optitronic para gestionar
+las cuentas del panel, las licencias de la app de escritorio, la telemetría de las instalaciones, los
+mensajes de soporte y los contactos que llegan desde la web.
 
-## 🚀 Características
+Consume la API Lambda [`mediframe_lambda_backend`](https://github.com/josuegmo97/mediframe_lambda_backend)
+(`https://api.optitronic.net/api` en producción).
 
-### ✨ Autenticación Completa
-- Login con JWT y refresh tokens
-- Registro de nuevos usuarios
-- Manejo automático de renovación de tokens
-- Logout con limpieza de sesión
-- Protección de rutas por roles
+## Stack
 
-### 📊 Dashboard Interactivo
-- Tarjetas de estadísticas animadas
-- Gráficos de tendencias (Area, Bar, Pie)
-- Actividad reciente en tiempo real
-- Indicadores KPI principales
-- Vista responsiva para móviles
+- React 18 + Vite 5 (JavaScript/JSX)
+- Tailwind CSS 3 con tokens de color en CSS variables (modo claro/oscuro)
+- TanStack Query 5 (cache y mutaciones), axios
+- React Router 6, react-hook-form + zod
+- Radix UI (diálogos, menús, tooltips accesibles), lucide-react, sonner, recharts, date-fns
+- Vitest para las utilidades puras de `src/lib`
 
-### 👥 Gestión de Usuarios
-- CRUD completo de usuarios
-- Filtros avanzados (búsqueda, estado, rol)
-- Paginación del lado del cliente
-- Activación/desactivación rápida
-- Exportación a CSV
-- Modal de edición con validación
+## Puesta en marcha
 
-### 🔑 Gestión de Licencias
-- Creación individual y en lote
-- Estados visuales (disponible/en uso/expirada)
-- Activación con código de dispositivo
-- Verificación de licencias
-- Historial de activaciones
-- Estadísticas detalladas
+```bash
+npm install
+cp .env.example .env      # VITE_API_URL=http://localhost:3000/api
+npm run dev               # http://localhost:5173
+```
 
-### 👤 Perfil de Usuario
-- Edición de información personal
-- Cambio de contraseña seguro
-- Avatar personalizable
-- Historial de actividad
-- Preferencias del sistema
+Scripts:
 
-### 🎨 UI/UX Premium
-- Diseño moderno con Tailwind CSS
-- Animaciones fluidas con Framer Motion
-- Tema de colores médico profesional
-- Tipografía Urbanist elegante
-- Modo claro optimizado
-- Notificaciones toast informativas
-- Sidebar colapsable
-- Tablas interactivas
-- Modales y formularios validados
+| Script | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción en `dist/` |
+| `npm run preview` | Sirve el build localmente |
+| `npm run lint` | ESLint (sin avisos permitidos) |
+| `npm run test` | Tests unitarios (vitest) |
+| `npm run check` | lint + test + build |
 
-## 🛠️ Stack Tecnológico
+Variables de entorno:
 
-- **React 18.3.1** con Vite 5.4
-- **TanStack Query** (React Query) para manejo de estado del servidor
-- **Axios** para peticiones HTTP
-- **React Router DOM v6** para navegación
-- **Tailwind CSS** para estilos
-- **Recharts** para gráficos
-- **React Hook Form** para formularios
-- **Sonner** para notificaciones toast
-- **Lucide React** para iconos
-- **Date-fns** para manejo de fechas
-- **Framer Motion** para animaciones
+| Variable | Descripción |
+|---|---|
+| `VITE_API_URL` | URL base de la API **incluyendo** `/api`. Local: `http://localhost:3000/api`. Producción: `https://api.optitronic.net/api`. |
 
-## 📋 Prerrequisitos
-
-- Node.js 16+ 
-- npm o yarn
-- Backend API corriendo en `http://localhost:3000`
-
-## 🚀 Instalación
-
-1. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
-
-2. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   # Edita .env con tus configuraciones
-   ```
-
-3. **Ejecutar en desarrollo**
-   ```bash
-   npm run dev
-   ```
-
-4. **Build para producción**
-   ```bash
-   npm run build
-   ```
-
-5. **Preview de producción**
-   ```bash
-   npm run preview
-   ```
-
-## 📁 Estructura del Proyecto
+## Estructura
 
 ```
 src/
-├── api/                 # Cliente HTTP y endpoints
-│   ├── client.js       # Configuración de Axios
-│   ├── auth.js         # Endpoints de autenticación
-│   ├── users.js        # Endpoints de usuarios
-│   └── licenses.js     # Endpoints de licencias
-├── components/         # Componentes reutilizables
-│   ├── auth/          # Componentes de autenticación
-│   ├── dashboard/     # Componentes del dashboard
-│   ├── layout/        # Layout principal
-│   ├── licenses/      # Componentes de licencias
-│   ├── ui/           # Componentes base
-│   └── users/        # Componentes de usuarios
-├── hooks/             # Custom hooks
-│   └── useAuth.js    # Hook de autenticación
-├── pages/            # Páginas principales
-│   ├── Login.jsx     # Página de login
-│   ├── Dashboard.jsx # Dashboard principal
-│   ├── Users.jsx     # Gestión de usuarios
-│   ├── Licenses.jsx  # Gestión de licencias
-│   └── Profile.jsx   # Perfil de usuario
-├── services/         # Servicios
-│   └── token.service.js # Manejo de tokens
-├── styles/           # Estilos globales
-│   └── globals.css   # CSS con Tailwind
-├── utils/           # Utilidades
-│   └── cn.js       # Función de className
-├── App.jsx         # Componente principal
-└── main.jsx       # Punto de entrada
+├── app/            providers (query, tema, auth, toasts), router, error boundary
+├── api/            cliente axios (http.js) y un módulo por recurso (*.api.js)
+├── components/
+│   ├── ui/         primitivas del design system (Button, Input, Dialog, DataTable, …)
+│   ├── charts/     helpers de recharts (tema, tooltip, ChartCard con vista de tabla)
+│   ├── layout/     AppShell, Sidebar, Topbar, drawer móvil, menú de usuario
+│   └── theme/      ThemeProvider (claro / oscuro / sistema)
+├── features/       una carpeta por dominio: auth, users, licenses, usage, atc, contacts, dashboard, profile
+│   └── <feature>/  *.queries.js (TanStack Query), *.utils.js (filtros, CSV), schemas.js (zod), components/
+├── hooks/          useListFilters (filtros en la URL), usePagination, useMediaQuery, …
+├── lib/            utilidades puras: api-error (normalización de errores), jwt, csv, format,
+│                   license-code, device-description, constants, query-keys, query-client
+├── pages/          una página por ruta (lazy)
+└── styles/         globals.css con los tokens
 ```
 
-## 🔧 Scripts Disponibles
+Rutas: `/ingresar`, `/registro`, `/` (inicio), `/usuarios`, `/licencias`, `/licencias/:id`,
+`/instalaciones`, `/instalaciones/:deviceId`, `/soporte`, `/soporte/:id`, `/contactos`, `/perfil`.
+Las rutas del panel anterior (`/login`, `/dashboard`, `/users`, …) redirigen a las nuevas.
 
-- `npm run dev` - Servidor de desarrollo
-- `npm run build` - Build para producción
-- `npm run preview` - Preview del build
-- `npm run lint` - Linting del código
+## Roles
 
-## 🌐 API Endpoints
+| Rol | Valor | Acceso |
+|---|---|---|
+| Administrador | `role: 1` (con `status: 1`) | Todo el panel |
+| Espectador | `role: 2` | Solo Inicio y Mi perfil |
 
-### Autenticación
-- `POST /auth/login` - Login con username/password
-- `POST /auth/register` - Registro de nuevos usuarios
-- `POST /auth/refresh` - Refresh token
-- `POST /auth/logout` - Cerrar sesión
-- `GET /auth/verify` - Verificar token actual
+Los registros públicos (`/registro`) quedan con `status: 0` (pendiente) hasta que un administrador
+los active desde Usuarios.
 
-### Usuarios
-- `GET /users` - Listar todos los usuarios (Solo Admin)
-- `GET /users/:id` - Obtener usuario por ID (Solo Admin)
-- `GET /users/profile` - Perfil del usuario actual
-- `PUT /users/profile` - Actualizar perfil propio
-- `PUT /users/:id` - Actualizar usuario (Solo Admin)
-- `GET /users/stats` - Estadísticas de usuarios (Solo Admin)
+## Restricciones de la API que condicionan el diseño
 
-### Licencias
-- `POST /licenses` - Crear licencia (Solo Admin)
-- `POST /licenses/batch` - Crear múltiples licencias (Solo Admin)
-- `GET /licenses` - Listar licencias (Solo Admin)
-- `GET /licenses/:id` - Obtener licencia por ID (Solo Admin)
-- `DELETE /licenses/:id` - Eliminar licencia (Solo Admin)
-- `POST /licenses/activate` - Activar licencia
-- `POST /licenses/verify` - Verificar licencia
-- `GET /licenses/stats` - Estadísticas de licencias (Solo Admin)
+- **JWT de 15 minutos sin refresh token.** El panel renueva el token con `POST /auth/refresh`
+  un minuto antes de que expire, solo con la pestaña visible y una única vez por token
+  (`src/features/auth/session-manager.js`). Un token vencido se descarta sin llamar a la red.
+- **`/api/auth` limita a 5 respuestas fallidas cada 15 minutos por IP.** Por eso los formularios
+  validan en cliente exactamente lo mismo que el servidor, el refresh nunca se reintenta tras un
+  401 y el logout es solo local.
+- **Los listados no tienen paginación.** Cada lista se descarga una vez, se guarda en cache
+  (10 min para licencias/soporte/telemetría/contactos, 2 min para usuarios) y se filtra, ordena y
+  pagina en el cliente. El botón "Actualizar" tiene un enfriamiento de 60 s.
+- **`status` y `role` deben viajar como números JSON** en los `PUT`/`PATCH`; los módulos de
+  `src/api` lo garantizan.
+- **No existe "crear usuario" para administradores:** se usa `POST /auth/register` y después
+  `PUT /users/:id` para fijar rol y estado.
+- **Las licencias no se editan ni se revocan** por API; solo se crean (individual o en lote) y se
+  eliminan cuando siguen disponibles. La activación, verificación y transferencia las hace la app
+  de escritorio con HMAC y no son accesibles desde el navegador.
 
-## 👥 Roles y Permisos
+## Despliegue en Vercel
 
-- **Admin (role: 1)**: Acceso total al sistema
-- **Espectador (role: 2)**: Solo puede ver su perfil y activar licencias
-- **Status**: 0 = Inactivo, 1 = Activo
+`vercel.json` ya incluye el rewrite de SPA y cabeceras de cache/seguridad.
 
-## 📊 Estados de Licencia
-
-- **1** = Disponible
-- **2** = En uso
-- **3** = Expirada
-
-## 🎨 Tema de Colores
-
-```css
-:root {
-  /* Backgrounds */
-  --color-background: #F1F4F2;
-  --color-surface: #FFFFFF;
-  
-  /* Primary */
-  --color-primary: #9DB582;
-  --color-on-primary: #FFFFFF;
-  
-  /* Secondary */
-  --color-secondary: #73AFDC;
-  --color-on-secondary: #FFFFFF;
-  
-  /* Tertiary */
-  --color-tertiary: #82947B;
-  --color-on-tertiary: #FFFFFF;
-  
-  /* Text */
-  --color-text-primary: #2E2E2E;
-  --color-text-secondary: #5A5A5A;
-  --color-text-accent: #9DB582;
-  
-  /* States */
-  --color-error: #D9534F;
-  --color-success: #9DB582;
-  --color-warning: #F39C12;
-  --color-info: #73AFDC;
-}
+```bash
+npx vercel login
+npx vercel link                              # proyecto nuevo: mediframe-admin
+npx vercel env add VITE_API_URL production   # https://api.optitronic.net/api
+npx vercel env add VITE_API_URL preview      # (misma URL o la de staging)
+npx vercel --prod
 ```
 
-## 📱 Responsive Design
+Para auto-deploys desde GitHub: `npx vercel git connect`.
 
-El dashboard está completamente optimizado para:
-- **Desktop**: Experiencia completa con sidebar y layout completo
-- **Tablet**: Layout adaptativo con navegación optimizada
-- **Mobile**: Vista móvil con navegación colapsable
+## Licencia
 
-## 🔒 Seguridad
-
-- Sanitización de inputs con Zod
-- Validación en cliente y servidor
-- Tokens JWT con refresh automático
-- Protección XSS y CSRF
-- Roles y permisos granulares
-
-## 🚀 Optimizaciones
-
-- Cache inteligente con React Query
-- Lazy loading de componentes
-- Debounce en búsquedas
-- Optimistic updates
-- Error boundaries
-- Skeleton loaders
-- Code splitting automático
-
-## 📝 Notas de Desarrollo
-
-1. **Backend API**: Asegúrate de que el backend esté corriendo en `http://localhost:3000`
-2. **CORS**: El backend debe permitir peticiones desde `http://localhost:5173`
-3. **Tokens**: Los tokens se almacenan en localStorage
-4. **Validación**: Todos los formularios tienen validación con Zod
-5. **Accesibilidad**: Componentes con ARIA labels apropiados
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/amazing-feature`)
-3. Commit tus cambios (`git commit -m 'Add amazing feature'`)
-4. Push a la rama (`git push origin feature/amazing-feature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
-## 📞 Soporte
-
-Para soporte técnico o preguntas:
-- Email: soporte@mediframe.com
-- Documentación: [docs.mediframe.com](https://docs.mediframe.com)
-- Issues: [GitHub Issues](https://github.com/mediframe/dashboard/issues)
-
----
-
-**MediFrame Dashboard** - Sistema de Gestión Médica Profesional ⚕️
+Propietario. © Optitronic.

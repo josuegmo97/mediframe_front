@@ -1,52 +1,72 @@
+import animate from 'tailwindcss-animate'
+
+/** Color tokens live in src/styles/globals.css as RGB channel triplets. */
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Urbanist', 'sans-serif'],
+        sans: ['"Urbanist Variable"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       colors: {
-        background: '#F1F4F2',
-        surface: '#FFFFFF',
-        primary: {
-          DEFAULT: '#9DB582',
-          foreground: '#FFFFFF',
+        bg: token('bg'),
+        surface: token('surface'),
+        'surface-2': token('surface-2'),
+        fg: token('fg'),
+        'fg-muted': token('fg-muted'),
+        'fg-subtle': token('fg-subtle'),
+        border: token('border'),
+        'border-strong': token('border-strong'),
+        accent: token('accent'),
+        'accent-fg': token('accent-fg'),
+        primary: token('primary'),
+        'primary-fg': token('primary-fg'),
+        secondary: token('secondary'),
+        'secondary-deep': token('secondary-deep'),
+        tertiary: token('tertiary'),
+        success: token('success'),
+        'success-fg': token('success-fg'),
+        info: token('info'),
+        'info-fg': token('info-fg'),
+        warning: token('warning'),
+        'warning-fg': token('warning-fg'),
+        danger: token('danger'),
+        'danger-fg': token('danger-fg'),
+        'danger-text': token('danger-text'),
+        ring: token('ring'),
+        chart: {
+          1: token('chart-1'),
+          2: token('chart-2'),
+          3: token('chart-3'),
+          4: token('chart-4'),
+          5: token('chart-5'),
+          grid: token('chart-grid'),
         },
-        secondary: {
-          DEFAULT: '#73AFDC',
-          foreground: '#FFFFFF',
-        },
-        tertiary: {
-          DEFAULT: '#82947B',
-          foreground: '#FFFFFF',
-        },
-        text: {
-          primary: '#2E2E2E',
-          secondary: '#5A5A5A',
-          accent: '#9DB582',
-          'accent-blue': '#A6BC8E',
-          disabled: '#9AA3A0',
-        },
-        input: {
-          background: '#FFFFFF',
-          text: '#2E2E2E',
-          border: '#CBD3D0',
-        },
-        border: {
-          DEFAULT: '#D6DAD7',
-          hover: '#A6BC8E',
-        },
-        disabled: '#E2E5E2',
-        error: '#D9534F',
-        success: '#9DB582',
-        warning: '#F39C12',
-        info: '#73AFDC',
+      },
+      borderRadius: {
+        xl: 'var(--radius)',
+        lg: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 6px)',
+      },
+      boxShadow: {
+        card: '0 1px 2px 0 rgb(20 24 22 / 0.04), 0 1px 3px 0 rgb(20 24 22 / 0.06)',
+        pop: '0 10px 30px -10px rgb(20 24 22 / 0.25), 0 2px 8px -2px rgb(20 24 22 / 0.1)',
+      },
+      minHeight: { touch: '44px' },
+      minWidth: { touch: '44px' },
+      maxWidth: { content: '80rem' },
+      keyframes: {
+        shimmer: { '0%': { backgroundPosition: '200% 0' }, '100%': { backgroundPosition: '-200% 0' } },
+      },
+      animation: {
+        shimmer: 'shimmer 1.6s linear infinite',
       },
     },
   },
-  plugins: [],
+  plugins: [animate],
 }
