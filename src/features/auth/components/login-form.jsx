@@ -55,7 +55,7 @@ export function LoginForm() {
       )}
 
       <FormField label="Usuario" error={errors.username?.message}>
-        <Input id="login-username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tu.usuario" {...register('username')} />
+        <Input id="login-username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tu_usuario" {...register('username')} />
       </FormField>
 
       <FormField label="Contraseña" error={errors.password?.message}>

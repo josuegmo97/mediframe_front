@@ -52,7 +52,7 @@ export function RegisterForm() {
       )}
 
       <FormField label="Usuario" required hint="Letras, números y guion bajo" error={errors.username?.message}>
-        <Input id="reg-username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tu.usuario" {...register('username')} />
+        <Input id="reg-username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tu_usuario" {...register('username')} />
       </FormField>
 
       <FormField label="Nombre completo" required error={errors.fullname?.message}>
