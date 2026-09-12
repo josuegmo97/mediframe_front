@@ -28,8 +28,10 @@ export function createQueryClient() {
       onError: (error, query) => {
         const normalized = normalizeApiError(error)
         if (normalized.handled || query.meta?.silent) return
-        // Las páginas renderizan el error en sitio; solo se toastea lo que no tiene UI propia
-        if (normalized.isRateLimited || normalized.isServer || normalized.isNetwork) {
+        // La carga inicial la renderiza cada página (ErrorState); solo se toastea cuando falla
+        // un refetch en segundo plano y ya había datos en pantalla.
+        const hadData = query.state.data !== undefined
+        if (hadData && (normalized.isRateLimited || normalized.isServer || normalized.isNetwork)) {
           toastApiError(normalized)
         }
       },

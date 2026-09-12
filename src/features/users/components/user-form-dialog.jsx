@@ -122,7 +122,7 @@ export function UserFormDialog({ open, onOpenChange, user = null, users = [] }) 
 
             {!isEdit && (
               <FormField label="Usuario" required hint="Letras, números y guion bajo. Se guarda en minúsculas." error={errors.username?.message}>
-                <Input id="uf-username" autoCapitalize="none" autoComplete="off" spellCheck={false} placeholder="nombre.apellido" {...register('username')} />
+                <Input id="uf-username" autoCapitalize="none" autoComplete="off" spellCheck={false} placeholder="nombre_apellido" {...register('username')} />
               </FormField>
             )}
 
