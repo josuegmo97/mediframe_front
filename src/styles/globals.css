@@ -2,94 +2,196 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Tokens de color como tripletas RGB (ver tailwind.config.js → token()).
+ * Marca Optitronic: salvia #9DB582 y azul #73AFDC como acento; para texto y
+ * botones en modo claro se usan tonos profundizados con contraste AA.
+ */
 :root {
-  /* Backgrounds */
-  --color-background: #F1F4F2;
-  --color-surface: #FFFFFF;
-  
-  /* Primary */
-  --color-primary: #9DB582;
-  --color-on-primary: #FFFFFF;
-  
-  /* Secondary */
-  --color-secondary: #73AFDC;
-  --color-on-secondary: #FFFFFF;
-  
-  /* Tertiary */
-  --color-tertiary: #82947B;
-  --color-on-tertiary: #FFFFFF;
-  
-  /* Text */
-  --color-text-primary: #2E2E2E;
-  --color-text-secondary: #5A5A5A;
-  --color-text-accent: #9DB582;
-  --color-text-accent-blue: #A6BC8E;
-  --color-text-disabled: #9AA3A0;
-  
-  /* Inputs */
-  --color-input-bg: #FFFFFF;
-  --color-input-text: #2E2E2E;
-  --color-input-border: #CBD3D0;
-  
-  /* Borders */
-  --color-border: #D6DAD7;
-  --color-border-hover: #A6BC8E;
-  
-  /* States */
-  --color-disabled: #E2E5E2;
-  --color-error: #D9534F;
-  --color-success: #9DB582;
-  --color-warning: #F39C12;
-  --color-info: #73AFDC;
-  
-  /* Font */
-  --font-family: 'Urbanist', sans-serif;
+  --bg: 241 244 242;            /* #F1F4F2 */
+  --surface: 255 255 255;
+  --surface-2: 246 248 246;
+  --fg: 46 46 46;               /* #2E2E2E */
+  --fg-muted: 90 90 90;         /* #5A5A5A */
+  --fg-subtle: 122 131 127;
+  --border: 214 218 215;        /* #D6DAD7 */
+  --border-strong: 203 211 208; /* #CBD3D0 */
+
+  --accent: 157 181 130;        /* #9DB582 */
+  --accent-fg: 28 33 30;
+  --primary: 94 122 75;         /* #5E7A4B */
+  --primary-fg: 255 255 255;
+  --secondary: 115 175 220;     /* #73AFDC */
+  --secondary-deep: 42 116 168; /* #2A74A8 */
+  --tertiary: 130 148 123;      /* #82947B */
+
+  --success: 157 181 130;
+  --success-fg: 36 56 24;
+  --info: 115 175 220;
+  --info-fg: 20 52 78;
+  --warning: 243 156 18;        /* #F39C12 */
+  --warning-fg: 92 56 0;
+  --danger: 217 83 79;          /* #D9534F */
+  --danger-fg: 255 255 255;
+  --danger-text: 201 48 44;     /* #C9302C */
+
+  --ring: 157 181 130;
+
+  /* Series de gráficos (validadas con dataviz/validate_palette: banda L, croma, CVD, contraste) */
+  --chart-1: 95 140 58;      /* #5F8C3A verde */
+  --chart-2: 42 116 168;     /* #2A74A8 azul */
+  --chart-3: 201 122 21;     /* #C97A15 naranja */
+  --chart-4: 123 94 167;     /* #7B5EA7 violeta */
+  --chart-5: 201 48 44;      /* #C9302C rojo */
+  /* Rampa ordinal de un solo tono para el donut de estados (validada con --ordinal) */
+  --chart-ramp-1: 143 176 110;  /* #8FB06E */
+  --chart-ramp-2: 95 140 58;    /* #5F8C3A */
+  --chart-ramp-3: 59 90 36;     /* #3B5A24 */
+  --chart-grid: 214 218 215;
+
+  --radius: 12px;
 }
 
-* {
-  box-sizing: border-box;
+.dark {
+  --bg: 20 24 22;               /* #141816 */
+  --surface: 28 33 30;          /* #1C211E */
+  --surface-2: 36 42 38;
+  --fg: 236 239 236;
+  --fg-muted: 169 177 172;
+  --fg-subtle: 124 133 127;
+  --border: 47 55 50;
+  --border-strong: 62 71 65;
+
+  --accent: 157 181 130;
+  --accent-fg: 20 24 22;
+  --primary: 157 181 130;
+  --primary-fg: 20 24 22;
+  --secondary: 115 175 220;
+  --secondary-deep: 140 195 235;
+  --tertiary: 130 148 123;
+
+  --success: 157 181 130;
+  --success-fg: 20 24 22;
+  --info: 115 175 220;
+  --info-fg: 20 24 22;
+  --warning: 245 176 65;
+  --warning-fg: 20 24 22;
+  --danger: 224 112 108;
+  --danger-fg: 20 24 22;
+  --danger-text: 240 140 136;
+
+  --ring: 157 181 130;
+  --chart-1: 118 160 78;     /* #76A04E */
+  --chart-2: 62 140 196;     /* #3E8CC4 */
+  --chart-3: 201 130 36;     /* #C98224 */
+  --chart-4: 138 120 194;    /* #8A78C2 */
+  --chart-5: 214 90 86;      /* #D65A56 */
+  --chart-ramp-1: 201 221 179;  /* #C9DDB3 */
+  --chart-ramp-2: 143 181 106;  /* #8FB56A */
+  --chart-ramp-3: 92 127 60;    /* #5C7F3C */
+  --chart-grid: 47 55 50;
 }
 
-body {
-  font-family: var(--font-family);
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  margin: 0;
-  padding: 0;
-  line-height: 1.5;
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+html.dark {
+  color-scheme: dark;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-background);
-}
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
+  body {
+    @apply bg-bg text-fg font-sans text-sm antialiased;
+    margin: 0;
+    min-height: 100dvh;
+    line-height: 1.5;
+    font-feature-settings: 'ss01', 'cv11';
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-hover);
-}
+  #root {
+    min-height: 100dvh;
+  }
 
-/* Loading animation */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.35);
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-fg;
+    text-wrap: balance;
+  }
+
+  button, [role='button'] {
+    touch-action: manipulation;
+  }
+
+  input, textarea, select {
+    @apply text-fg;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply text-fg-subtle;
+  }
+
+  /* Evita zoom automático de iOS en inputs pequeños */
+  @media (max-width: 767px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border-strong)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgb(var(--border-strong));
+    border-radius: 9999px;
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-fg focus:shadow-pop;
+  }
 }
 
-/* Utility classes */
-.border-3 {
-  border-width: 3px;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
