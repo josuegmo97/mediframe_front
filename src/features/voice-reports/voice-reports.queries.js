@@ -99,3 +99,31 @@ export function useUpdateVoiceReportDevice() {
     },
   })
 }
+
+/**
+ * Habilita (o deshabilita) varios dispositivos en serie. Devuelve { ok, failed }.
+ * Se hace en serie para no disparar el rate limiter del backend (100 req/15 min por IP).
+ */
+export function useBulkSetVoiceReportEnabled() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: async ({ deviceIds, enabled }) => {
+      const failed = []
+      let ok = 0
+      for (const deviceId of deviceIds) {
+        try {
+          await api.updateVoiceReportDevice(deviceId, { enabled })
+          ok += 1
+        } catch (error) {
+          failed.push({ deviceId, error })
+          if (error?.isRateLimited) break
+        }
+      }
+      return { ok, failed }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: qk.voiceReports.all })
+    },
+  })
+}

@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, Mic } from 'lucide-react'
+import { CheckCheck, Download, Mic } from 'lucide-react'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,14 +13,17 @@ import { Pagination } from '@/components/ui/pagination'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useListFilters } from '@/hooks/use-list-filters'
 import { usePagination } from '@/hooks/use-pagination'
+import { useLicensesQuery } from '@/features/licenses/licenses.queries'
+import { BulkEnableDialog } from '@/features/voice-reports/components/bulk-enable-dialog'
 import { QuotaBar } from '@/features/voice-reports/components/quota-bar'
+import { VoiceReportEnableSwitch } from '@/features/voice-reports/components/voice-report-enable-switch'
 import { VoiceReportDeviceCard } from '@/features/voice-reports/components/voice-report-device-card'
 import { VoiceReportFilters } from '@/features/voice-reports/components/voice-report-filters'
 import { VoiceReportSettingsCard } from '@/features/voice-reports/components/voice-report-settings-card'
 import { VoiceReportStatTiles } from '@/features/voice-reports/components/voice-report-stat-tiles'
 import { VoiceReportStateBadge } from '@/features/voice-reports/components/voice-report-state-badge'
 import { useVoiceReportDevicesQuery } from '@/features/voice-reports/voice-reports.queries'
-import { filterVoiceReportDevices, voiceDeviceLabel, voiceReportDevicesToCsv } from '@/features/voice-reports/voice-reports.utils'
+import { computeVoiceStats, filterVoiceReportDevices, mergeVoiceDevices, voiceDeviceLabel, voiceReportDevicesToCsv } from '@/features/voice-reports/voice-reports.utils'
 import { DEFAULT_PAGE_SIZE } from '@/lib/constants'
 import { downloadCsv, timestampedFilename } from '@/lib/csv'
 import { formatNumber, formatRelative, formatUsd, formatUtcDate, shortId } from '@/lib/format'
@@ -34,11 +37,15 @@ export default function VoiceReportsPage() {
   useDocumentTitle('Dictado por voz')
   const navigate = useNavigate()
   const query = useVoiceReportDevicesQuery()
-  const items = query.data?.items ?? EMPTY
+  const licenses = useLicensesQuery()
+  const items = useMemo(() => mergeVoiceDevices(query.data, licenses.data) ?? EMPTY, [query.data, licenses.data])
+  const stats = useMemo(() => (query.data ? computeVoiceStats(items, query.data.stats) : undefined), [items, query.data])
   const settings = query.data?.settings
   const { filters, setFilter, reset, isDirty } = useListFilters(FILTER_DEFAULTS)
+  const [bulkOpen, setBulkOpen] = useState(false)
 
   const filtered = useMemo(() => filterVoiceReportDevices(items, filters), [items, filters])
+  const pendingEnable = useMemo(() => filtered.filter((item) => !item.enabled), [filtered])
   const onPageChange = useCallback((page) => setFilter('pagina', String(page)), [setFilter])
   const pagination = usePagination({ items: filtered, page: Number(filters.pagina) || 1, pageSize: Number(filters.por) || DEFAULT_PAGE_SIZE, onPageChange })
 
@@ -75,6 +82,7 @@ export default function VoiceReportsPage() {
           </Badge>
         ),
     },
+    { key: 'enabled', header: 'Habilitado', cell: (item) => <VoiceReportEnableSwitch item={item} /> },
     { key: 'state', header: 'Estado', cell: (item) => <VoiceReportStateBadge state={item.state} reasonCode={item.reason_code} /> },
     { key: 'quota', header: 'Cuota', width: '11rem', cell: (item) => <QuotaBar quota={item.quota} /> },
     { key: 'errors', header: 'Errores', align: 'right', hideBelow: 'lg', cell: (item) => <span className={item.period_usage?.errors ? 'tabular-nums text-danger-text' : 'tabular-nums text-fg-muted'}>{formatNumber(item.period_usage?.errors)}</span> },
@@ -101,9 +109,14 @@ export default function VoiceReportsPage() {
           )
         }
         actions={
-          <Button variant="outline" onClick={handleExport} disabled={!filtered.length} leftIcon={<Download />}>
-            Exportar CSV
-          </Button>
+          <>
+            <Button variant="outline" onClick={handleExport} disabled={!filtered.length} leftIcon={<Download />}>
+              Exportar CSV
+            </Button>
+            <Button onClick={() => setBulkOpen(true)} disabled={!pendingEnable.length} leftIcon={<CheckCheck />}>
+              Habilitar todos{pendingEnable.length ? ` (${pendingEnable.length})` : ''}
+            </Button>
+          </>
         }
       />
 
@@ -113,7 +126,7 @@ export default function VoiceReportsPage() {
         <>
           {query.isError && query.data && <Alert variant="warning">No se pudo actualizar la información. Mostrando datos guardados.</Alert>}
 
-          <VoiceReportStatTiles stats={query.data?.stats} period={query.data?.period} loading={query.isPending} />
+          <VoiceReportStatTiles stats={stats} period={query.data?.period} loading={query.isPending} />
 
           <VoiceReportSettingsCard settings={settings} loading={query.isPending} />
 
@@ -138,12 +151,13 @@ export default function VoiceReportsPage() {
                 isDirty ? (
                   <EmptyState icon={Mic} title="Sin resultados" description="Ningún dispositivo coincide con los filtros." action={<Button variant="outline" onClick={reset}>Limpiar filtros</Button>} />
                 ) : (
-                  <EmptyState icon={Mic} title="Aún no hay dispositivos" description="Aparecerán aquí los equipos con configuración propia o con dictados en el período actual." />
+                  <EmptyState icon={Mic} title="Aún no hay dispositivos" description="Aparecerán aquí los equipos con licencia activa, con configuración propia o con dictados en el período actual." />
                 )
               }
             />
             <Pagination {...pagination} onPageChange={onPageChange} onPageSizeChange={(size) => setFilter('por', String(size))} itemLabel="dispositivos" />
           </section>
+          <BulkEnableDialog open={bulkOpen} onOpenChange={setBulkOpen} devices={pendingEnable} />
         </>
       )}
     </div>

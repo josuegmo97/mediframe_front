@@ -19,5 +19,12 @@ export function VoiceReportStateBadge({ state, reasonCode, showReason = false })
       </span>
     )
   }
-  return reason ? <Tooltip content={reason}>{badge}</Tooltip> : badge
+  // Radix Tooltip necesita un hijo con ref; Badge es un componente de función sin forwardRef.
+  return reason ? (
+    <Tooltip content={reason}>
+      <span className="inline-flex">{badge}</span>
+    </Tooltip>
+  ) : (
+    badge
+  )
 }

@@ -3,6 +3,7 @@ import { formatNumber, formatRelative, formatUsd, shortId } from '@/lib/format'
 import { formatLicenseCode } from '@/lib/license-code'
 import { voiceDeviceLabel } from '../voice-reports.utils'
 import { QuotaBar } from './quota-bar'
+import { VoiceReportEnableSwitch } from './voice-report-enable-switch'
 import { VoiceReportStateBadge } from './voice-report-state-badge'
 
 export function VoiceReportDeviceCard({ item }) {
@@ -19,7 +20,10 @@ export function VoiceReportDeviceCard({ item }) {
       <p className="mt-2 truncate text-sm text-fg-muted">
         {item.license ? `${item.license.owner_name || 'Sin nombre'} · ${formatLicenseCode(item.license.code)}` : 'Sin licencia vigente'}
       </p>
-      <QuotaBar quota={item.quota} className="mt-3" />
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <QuotaBar quota={item.quota} className="min-w-0 flex-1" />
+        <VoiceReportEnableSwitch item={item} label="Habilitado" />
+      </div>
       <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
         {[
           ['Errores', formatNumber(usage.errors)],

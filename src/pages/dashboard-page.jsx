@@ -23,6 +23,7 @@ import { useUsageQuery } from '@/features/usage/usage.queries'
 import { useUserStatsQuery } from '@/features/users/users.queries'
 import { VoiceReportStatTiles } from '@/features/voice-reports/components/voice-report-stat-tiles'
 import { useVoiceReportDevicesQuery } from '@/features/voice-reports/voice-reports.queries'
+import { computeVoiceStats, mergeVoiceDevices } from '@/features/voice-reports/voice-reports.utils'
 
 const EMPTY = []
 
@@ -68,6 +69,7 @@ function AdminDashboard({ user }) {
   const versions = useMemo(() => versionsInUse(usageItems, licenses), [usageItems, licenses])
   const models = useMemo(() => deviceModels(licenses), [licenses])
   const syncs = useMemo(() => recentSyncs(usageItems, 6), [usageItems])
+  const voiceStats = useMemo(() => (voiceQuery.data ? computeVoiceStats(mergeVoiceDevices(voiceQuery.data, licenses), voiceQuery.data.stats) : undefined), [voiceQuery.data, licenses])
 
   const pendingUsers = userStats.data?.inactive ?? 0
   const allFailed = [userStats, licenseStats, licensesQuery, usageQuery].every((q) => q.isError && !q.data)
@@ -156,7 +158,7 @@ function AdminDashboard({ user }) {
           >
             Dictado por voz
           </SectionTitle>
-          <VoiceReportStatTiles stats={voiceQuery.data?.stats} period={voiceQuery.data?.period} loading={voiceQuery.isPending} />
+          <VoiceReportStatTiles stats={voiceStats} period={voiceQuery.data?.period} loading={voiceQuery.isPending} />
         </section>
       )}
 

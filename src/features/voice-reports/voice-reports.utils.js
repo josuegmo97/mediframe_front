@@ -1,8 +1,9 @@
 import { VOICE_REPORT_REASON_LABEL, VOICE_REPORT_STATE_META } from '@/lib/constants'
 import { toCsv } from '@/lib/csv'
-import { deviceLabel } from '@/lib/device-description'
+import { deviceLabel, normalizeDeviceId } from '@/lib/device-description'
 import { formatDateTime, shortId } from '@/lib/format'
-import { licenseCodeMatches } from '@/lib/license-code'
+import { effectiveLicenseStatus, licenseCodeMatches } from '@/lib/license-code'
+import { LICENSE_STATUS } from '@/lib/constants'
 
 const normalize = (value) => String(value ?? '').toLowerCase()
 
@@ -72,4 +73,63 @@ export function voiceReportDevicesToCsv(items) {
     { header: 'ÚLTIMO USO', accessor: (i) => formatDateTime(i.period_usage?.last_used_at) },
     { header: 'NOTAS', accessor: (i) => i.notes ?? '' },
   ])
+}
+
+const EMPTY_USAGE = { success: 0, errors: 0, cost_usd: 0, transcription_seconds: 0, last_used_at: null, sessions: 0, transcriptions: 0, accepted: 0, discarded: 0, distinct_users: 0 }
+
+/**
+ * El backend solo lista dispositivos con configuración propia o consumo en el período.
+ * Aquí se completan con los equipos que tienen licencia activa (mismo shape que el backend),
+ * para poder habilitarlos desde el panel aunque nunca hayan dictado.
+ */
+export function mergeVoiceDevices(voiceData, licenses) {
+  const items = voiceData?.items ?? []
+  const settings = voiceData?.settings
+  if (!settings || !licenses?.length) return items
+  const known = new Set(items.map((i) => normalizeDeviceId(i.device_id)))
+  const extra = []
+  for (const license of licenses) {
+    const deviceId = normalizeDeviceId(license.device)
+    if (!deviceId || deviceId === 'UNKNOWN DEVICE' || known.has(deviceId)) continue
+    if (effectiveLicenseStatus(license) !== LICENSE_STATUS.IN_USE) continue
+    known.add(deviceId)
+    const enabled = Boolean(settings.default_device_enabled)
+    const state = !settings.enabled ? ['hidden', 'FEATURE_DISABLED'] : !enabled ? ['hidden', 'DEVICE_NOT_ALLOWED'] : ['available', null]
+    extra.push({
+      device_id: deviceId,
+      enabled,
+      has_settings: false,
+      blocked_by_admin: false,
+      limit_override: null,
+      notes: null,
+      state: state[0],
+      reason_code: state[1],
+      quota: { limit: settings.default_limit ?? null, used: 0, remaining: settings.default_limit ?? null, period: settings.period, resets_at: voiceData.period?.resets_at ?? null },
+      period_usage: { ...EMPTY_USAGE },
+      license: {
+        code: license.code,
+        owner_name: license.owner_name || '',
+        owner_email: license.owner_email || '',
+        device_description: license.device_description || '',
+        status: license.status,
+        expired_at: license.expired_at,
+        version: license.version || '',
+      },
+      updated_at: null,
+      synthetic: true,
+    })
+  }
+  extra.sort((a, b) => a.device_id.localeCompare(b.device_id))
+  return [...items, ...extra]
+}
+
+/** Recalcula los contadores de dispositivos sobre la lista fusionada; los totales de consumo vienen del backend. */
+export function computeVoiceStats(items, backendStats) {
+  return {
+    total: items.length,
+    enabled: items.filter((i) => i.enabled).length,
+    blocked: items.filter((i) => i.blocked_by_admin).length,
+    available: items.filter((i) => i.state === 'available').length,
+    totals: backendStats?.totals ?? { success: 0, errors: 0, cost_usd: 0, sessions: 0, distinct_users: 0 },
+  }
 }
