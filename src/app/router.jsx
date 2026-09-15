@@ -17,6 +17,8 @@ const InstallationDetailPage = lazy(() => import('@/pages/installation-detail-pa
 const SupportPage = lazy(() => import('@/pages/support-page'))
 const SupportDetailPage = lazy(() => import('@/pages/support-detail-page'))
 const ContactsPage = lazy(() => import('@/pages/contacts-page'))
+const VoiceReportsPage = lazy(() => import('@/pages/voice-reports-page'))
+const VoiceReportDevicePage = lazy(() => import('@/pages/voice-report-device-page'))
 
 const redirect = (from, to) => ({ path: from, element: <Navigate to={to} replace /> })
 
@@ -49,6 +51,8 @@ export const router = createBrowserRouter([
               { path: 'soporte', element: <SupportPage />, handle: { title: 'Soporte' } },
               { path: 'soporte/:id', element: <SupportDetailPage />, handle: { title: 'Mensaje de soporte' } },
               { path: 'contactos', element: <ContactsPage />, handle: { title: 'Contactos' } },
+              { path: 'dictado', element: <VoiceReportsPage />, handle: { title: 'Dictado por voz' } },
+              { path: 'dictado/:deviceId', element: <VoiceReportDevicePage />, handle: { title: 'Dispositivo · Dictado por voz' } },
             ],
           },
           { path: '*', element: <NotFoundPage />, handle: { title: 'No encontrado' } },
