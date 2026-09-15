@@ -30,4 +30,11 @@ export const qk = {
     list: () => ['contacts', 'list'],
     detail: (id) => ['contacts', 'detail', id],
   },
+  voiceReports: {
+    all: ['voice-reports'],
+    settings: () => ['voice-reports', 'settings'],
+    devices: () => ['voice-reports', 'devices'],
+    device: (deviceId) => ['voice-reports', 'device', deviceId],
+    usage: (deviceId, params) => ['voice-reports', 'usage', deviceId, params],
+  },
 }
