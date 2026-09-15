@@ -21,6 +21,8 @@ import { AccountSummaryCard } from '@/features/profile/components/account-summar
 import { UsageStatTiles } from '@/features/usage/components/usage-stat-tiles'
 import { useUsageQuery } from '@/features/usage/usage.queries'
 import { useUserStatsQuery } from '@/features/users/users.queries'
+import { VoiceReportStatTiles } from '@/features/voice-reports/components/voice-report-stat-tiles'
+import { useVoiceReportDevicesQuery } from '@/features/voice-reports/voice-reports.queries'
 
 const EMPTY = []
 
@@ -56,6 +58,7 @@ function AdminDashboard({ user }) {
   const licenseStats = useLicenseStatsQuery()
   const licensesQuery = useLicensesQuery()
   const usageQuery = useUsageQuery()
+  const voiceQuery = useVoiceReportDevicesQuery()
 
   const licenses = licensesQuery.data ?? EMPTY
   const usageItems = usageQuery.data?.items ?? EMPTY
@@ -69,12 +72,13 @@ function AdminDashboard({ user }) {
   const pendingUsers = userStats.data?.inactive ?? 0
   const allFailed = [userStats, licenseStats, licensesQuery, usageQuery].every((q) => q.isError && !q.data)
   const lastUpdated = Math.max(licensesQuery.dataUpdatedAt || 0, licenseStats.dataUpdatedAt || 0, usageQuery.dataUpdatedAt || 0) || undefined
-  const isFetching = licensesQuery.isFetching || licenseStats.isFetching || usageQuery.isFetching || userStats.isFetching
+  const isFetching = licensesQuery.isFetching || licenseStats.isFetching || usageQuery.isFetching || userStats.isFetching || voiceQuery.isFetching
   const refreshAll = () => {
     userStats.refetch()
     licenseStats.refetch()
     licensesQuery.refetch()
     usageQuery.refetch()
+    voiceQuery.refetch()
   }
 
   if (allFailed) {
@@ -140,6 +144,21 @@ function AdminDashboard({ user }) {
         <HorizontalBarsChart title="Versiones de la app en uso" description="Instalaciones por versión reportada" data={versions} loading={usageQuery.isPending && licensesQuery.isPending} emptyDescription="Sin instalaciones activas todavía." seriesName="Instalaciones" rowLabel="Versión" />
         <HorizontalBarsChart title="Equipos" description="Modelos de Mac con licencia activada" data={models} loading={licensesQuery.isPending} emptyDescription="Aún no hay licencias activadas." seriesName="Licencias" rowLabel="Modelo" />
       </section>
+
+      {(voiceQuery.isPending || voiceQuery.data) && (
+        <section className="space-y-3">
+          <SectionTitle
+            action={
+              <Button asChild variant="link" size="sm" className="h-auto p-0">
+                <Link to="/dictado">Ver dictado por voz</Link>
+              </Button>
+            }
+          >
+            Dictado por voz
+          </SectionTitle>
+          <VoiceReportStatTiles stats={voiceQuery.data?.stats} period={voiceQuery.data?.period} loading={voiceQuery.isPending} />
+        </section>
+      )}
 
       <section className="space-y-3">
         <SectionTitle
