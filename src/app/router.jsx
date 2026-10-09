@@ -12,6 +12,8 @@ const ProfilePage = lazy(() => import('@/pages/profile-page'))
 const UsersPage = lazy(() => import('@/pages/users-page'))
 const LicensesPage = lazy(() => import('@/pages/licenses-page'))
 const LicenseDetailPage = lazy(() => import('@/pages/license-detail-page'))
+const PausedLicensesPage = lazy(() => import('@/pages/paused-licenses-page'))
+const LicenseTermsPage = lazy(() => import('@/pages/license-terms-page'))
 const InstallationsPage = lazy(() => import('@/pages/installations-page'))
 const InstallationDetailPage = lazy(() => import('@/pages/installation-detail-page'))
 const SupportPage = lazy(() => import('@/pages/support-page'))
@@ -46,6 +48,8 @@ export const router = createBrowserRouter([
               { path: 'usuarios', element: <UsersPage />, handle: { title: 'Usuarios' } },
               { path: 'licencias', element: <LicensesPage />, handle: { title: 'Licencias' } },
               { path: 'licencias/:id', element: <LicenseDetailPage />, handle: { title: 'Detalle de licencia' } },
+              { path: 'licencias-en-pausa', element: <PausedLicensesPage />, handle: { title: 'Licencias en pausa' } },
+              { path: 'terminos', element: <LicenseTermsPage />, handle: { title: 'Términos y condiciones' } },
               { path: 'instalaciones', element: <InstallationsPage />, handle: { title: 'Instalaciones' } },
               { path: 'instalaciones/:deviceId', element: <InstallationDetailPage />, handle: { title: 'Detalle de instalación' } },
               { path: 'soporte', element: <SupportPage />, handle: { title: 'Soporte' } },

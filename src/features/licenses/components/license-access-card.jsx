@@ -3,29 +3,17 @@ import { FileCheck2, PauseCircle, PlayCircle, ShieldAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { LICENSE_STATUS } from '@/lib/constants'
 import { formatDateTime, formatRelative } from '@/lib/format'
-import { effectiveLicenseStatus, formatLicenseCode } from '@/lib/license-code'
-import { toast, toastApiError } from '@/lib/toast'
-import { useCancelLicenseTerms, useRequestLicenseTerms, useSetLicensePaused } from '../licenses.queries'
-import { isLicensePaused } from '../licenses.utils'
+import { effectiveLicenseStatus } from '@/lib/license-code'
+import { currentTermsAcceptances, isLicensePaused } from '../licenses.utils'
+import { PauseLicenseDialog } from './pause-license-dialog'
+import { TermsRequestDialog } from './terms-request-dialog'
 
 function PauseSection({ license }) {
-  const mutation = useSetLicensePaused()
   const [confirming, setConfirming] = useState(false)
   const paused = isLicensePaused(license)
   const inUse = effectiveLicenseStatus(license) === LICENSE_STATUS.IN_USE
-
-  const handleConfirm = async () => {
-    try {
-      await mutation.mutateAsync({ id: license._id, paused: !paused })
-      toast.success(paused ? 'Licencia reanudada' : 'Licencia pausada')
-      setConfirming(false)
-    } catch (error) {
-      toastApiError(error)
-    }
-  }
 
   return (
     <section className="space-y-3">
@@ -56,48 +44,15 @@ function PauseSection({ license }) {
         </Button>
       </div>
 
-      <ConfirmDialog
-        open={confirming}
-        onOpenChange={setConfirming}
-        title={paused ? 'Reanudar licencia' : 'Pausar licencia'}
-        description={
-          paused
-            ? 'El usuario podrá volver a crear pacientes y estudios la próxima vez que abra la app con internet.'
-            : 'La próxima vez que el usuario abra la app con internet verá que su cuenta está en mantenimiento y deberá contactar a soporte. La vigencia no se detiene.'
-        }
-        confirmLabel={paused ? 'Reanudar' : 'Pausar'}
-        variant={paused ? 'default' : 'danger'}
-        loading={mutation.isPending}
-        onConfirm={handleConfirm}
-      >
-        <p className="rounded-lg bg-surface-2 px-3 py-2 text-center font-mono text-base tracking-wider text-fg">{formatLicenseCode(license.code)}</p>
-      </ConfirmDialog>
+      <PauseLicenseDialog license={license} open={confirming} onOpenChange={setConfirming} />
     </section>
   )
 }
 
 function TermsSection({ license }) {
-  const requestMutation = useRequestLicenseTerms()
-  const cancelMutation = useCancelLicenseTerms()
   const [confirming, setConfirming] = useState(null) // 'request' | 'cancel' | null
   const pending = Boolean(license.terms_request_id)
-  const acceptances = (license.terms_acceptances ?? []).filter((item) => item.request_id === license.terms_request_id)
-  const busy = requestMutation.isPending || cancelMutation.isPending
-
-  const handleConfirm = async () => {
-    try {
-      if (confirming === 'cancel') {
-        await cancelMutation.mutateAsync(license._id)
-        toast.success('Solicitud cancelada')
-      } else {
-        await requestMutation.mutateAsync(license._id)
-        toast.success('Solicitud de términos enviada')
-      }
-      setConfirming(null)
-    } catch (error) {
-      toastApiError(error)
-    }
-  }
+  const acceptances = currentTermsAcceptances(license)
 
   return (
     <section className="space-y-3">
@@ -108,7 +63,7 @@ function TermsSection({ license }) {
             {pending && <Badge variant="info" dot>Solicitados</Badge>}
           </h3>
           <p className="text-sm text-fg-muted">
-            Cada usuario y sub-usuario de esta licencia deberá leer y aceptar los términos al iniciar sesión (con internet).
+            Cada usuario y sub-usuario de esta licencia deberá leer y aceptar los términos al iniciar sesión o, si ya tiene la app abierta, en menos de 10 minutos (con internet).
           </p>
           {pending && license.terms_requested_at && (
             <p className="text-xs text-fg-subtle">
@@ -118,11 +73,11 @@ function TermsSection({ license }) {
         </div>
         <div className="flex flex-wrap gap-2">
           {pending && (
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => setConfirming('cancel')}>
+            <Button variant="ghost" size="sm" onClick={() => setConfirming('cancel')}>
               Cancelar solicitud
             </Button>
           )}
-          <Button variant="outline" size="sm" disabled={busy} leftIcon={<FileCheck2 />} onClick={() => setConfirming('request')}>
+          <Button variant="outline" size="sm" leftIcon={<FileCheck2 />} onClick={() => setConfirming('request')}>
             {pending ? 'Volver a solicitar' : 'Solicitar aceptación'}
           </Button>
         </div>
@@ -151,23 +106,7 @@ function TermsSection({ license }) {
         </div>
       )}
 
-      <ConfirmDialog
-        open={confirming !== null}
-        onOpenChange={(open) => !open && setConfirming(null)}
-        title={confirming === 'cancel' ? 'Cancelar solicitud de términos' : 'Solicitar aceptación de términos'}
-        description={
-          confirming === 'cancel'
-            ? 'Los usuarios que aún no aceptaron dejarán de ver el aviso.'
-            : pending
-              ? 'Se creará una nueva solicitud: todos los usuarios, incluso quienes ya aceptaron, deberán aceptar de nuevo.'
-              : 'Al iniciar sesión con internet, cada usuario y sub-usuario verá los términos y deberá aceptarlos para continuar.'
-        }
-        confirmLabel={confirming === 'cancel' ? 'Cancelar solicitud' : 'Solicitar'}
-        cancelLabel="Volver"
-        variant={confirming === 'cancel' ? 'danger' : 'default'}
-        loading={busy}
-        onConfirm={handleConfirm}
-      />
+      <TermsRequestDialog license={license} mode={confirming} onClose={() => setConfirming(null)} />
     </section>
   )
 }
@@ -181,7 +120,7 @@ export function LicenseAccessCard({ license }) {
         </span>
         <div>
           <CardTitle>Control de acceso</CardTitle>
-          <CardDescription>Los cambios se aplican la próxima vez que la app se abra con internet.</CardDescription>
+          <CardDescription>Los cambios llegan a la app al abrirla con internet o, si ya está abierta, en menos de 10 minutos.</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

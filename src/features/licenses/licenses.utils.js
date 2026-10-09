@@ -28,18 +28,74 @@ export function filterLicenses(licenses, { q = '', estado = '', dias = '', pront
     } else if (estado !== '' && String(status) !== String(estado)) return false
     if (dias !== '' && String(license.days_permission) !== String(dias)) return false
     if (pronto === '1' && !isExpiringSoon(license, now)) return false
-    if (!query) return true
-    return (
-      licenseCodeMatches(license.code, query) ||
-      normalize(license.device).includes(query) ||
-      normalize(license.owner_name).includes(query) ||
-      normalize(license.owner_email).includes(query) ||
-      normalize(license.owner_identification).includes(query) ||
-      normalize(license.owner_phone).includes(query) ||
-      normalize(license.description).includes(query) ||
-      normalize(deviceLabel(license.device_description, '')).includes(query)
-    )
+    return matchesLicenseQuery(license, query)
   })
+}
+
+/** `query` ya normalizado (minúsculas, sin espacios extremos); vacío coincide con todo. */
+function matchesLicenseQuery(license, query) {
+  if (!query) return true
+  return (
+    licenseCodeMatches(license.code, query) ||
+    normalize(license.device).includes(query) ||
+    normalize(license.owner_name).includes(query) ||
+    normalize(license.owner_email).includes(query) ||
+    normalize(license.owner_identification).includes(query) ||
+    normalize(license.owner_phone).includes(query) ||
+    normalize(license.description).includes(query) ||
+    normalize(deviceLabel(license.device_description, '')).includes(query)
+  )
+}
+
+const byDateDesc = (getDate) => (a, b) => new Date(getDate(b) ?? 0) - new Date(getDate(a) ?? 0)
+
+/** Aceptaciones de la solicitud vigente (el backend borra las anteriores al volver a solicitar o cancelar). */
+export function currentTermsAcceptances(license) {
+  if (!license?.terms_request_id) return []
+  return (license.terms_acceptances ?? []).filter((item) => item.request_id === license.terms_request_id)
+}
+
+/** Licencias con una solicitud de términos vigente, la más reciente primero. */
+export function licensesWithTermsRequest(licenses) {
+  return (licenses ?? []).filter((license) => license.terms_request_id).sort(byDateDesc((license) => license.terms_requested_at))
+}
+
+export function computeTermsStats(licenses) {
+  const stats = { requested: 0, accepted: 0, pending: 0, acceptances: 0 }
+  for (const license of licensesWithTermsRequest(licenses)) {
+    const count = currentTermsAcceptances(license).length
+    stats.requested += 1
+    stats.acceptances += count
+    if (count > 0) stats.accepted += 1
+    else stats.pending += 1
+  }
+  return stats
+}
+
+/** Solicitudes vigentes filtradas. estado: '' | 'pendiente' (nadie aceptó) | 'aceptada' (al menos una aceptación). */
+export function filterTermsLicenses(licenses, { q = '', estado = '' } = {}) {
+  const query = normalize(q).trim()
+  return licensesWithTermsRequest(licenses).filter((license) => {
+    const accepted = currentTermsAcceptances(license).length > 0
+    if (estado === 'pendiente' && accepted) return false
+    if (estado === 'aceptada' && !accepted) return false
+    return matchesLicenseQuery(license, query)
+  })
+}
+
+/** Una fila por aceptación vigente (con su licencia), la más reciente primero. tipo: '' | 'titular' | 'sub'. */
+export function termsAcceptanceRows(licenses, { q = '', tipo = '' } = {}) {
+  const query = normalize(q).trim()
+  const rows = []
+  for (const license of licensesWithTermsRequest(licenses)) {
+    currentTermsAcceptances(license).forEach((acceptance, index) => {
+      if (tipo === 'titular' && acceptance.is_sub_user) return
+      if (tipo === 'sub' && !acceptance.is_sub_user) return
+      if (query && !normalize(acceptance.user_name).includes(query) && !matchesLicenseQuery(license, query)) return
+      rows.push({ _id: `${license._id}-${index}`, license, ...acceptance })
+    })
+  }
+  return rows.sort(byDateDesc((row) => row.accepted_at))
 }
 
 export function computeStats(licenses, now = Date.now()) {
