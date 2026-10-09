@@ -30,3 +30,17 @@ export function createLicenseBatch({ quantity, days_permission, description }) {
 export function deleteLicense(id) {
   return http.delete(`/licenses/${id}`).then(unwrap)
 }
+
+/** Pausa o reanuda una licencia en uso; la vigencia sigue corriendo. */
+export function setLicensePaused(id, paused) {
+  return http.patch(`/licenses/${id}/pause`, { paused: Boolean(paused) }).then(unwrap)
+}
+
+/** Nueva solicitud de Términos y condiciones: invalida las aceptaciones anteriores. */
+export function requestLicenseTerms(id) {
+  return http.post(`/licenses/${id}/terms-request`).then(unwrap)
+}
+
+export function cancelLicenseTermsRequest(id) {
+  return http.delete(`/licenses/${id}/terms-request`).then(unwrap)
+}

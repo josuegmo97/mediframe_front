@@ -9,6 +9,7 @@ import { formatDate, formatDateTime, formatNumber, formatRelative, shortId } fro
 import { effectiveLicenseStatus, licenseDaysRemaining } from '@/lib/license-code'
 import { approximateActivationDate, createdByLabel } from '../licenses.utils'
 import { AtcStatusBadge } from '@/features/atc/components/atc-status-badge'
+import { LicenseAccessCard } from './license-access-card'
 
 function VigenciaCard({ license }) {
   const status = effectiveLicenseStatus(license)
@@ -78,6 +79,8 @@ export function LicenseDetailSections({ license, usageItem, atcMessages, atcLoad
       </Card>
 
       <VigenciaCard license={license} />
+
+      {activated && <LicenseAccessCard license={license} />}
 
       <Card>
         <CardHeader className="flex-row items-center gap-3">

@@ -91,3 +91,29 @@ export function useDeleteLicense() {
     },
   })
 }
+
+/** Reemplaza la licencia en la lista y en el detalle con la versión devuelta por el backend. */
+function useLicenseUpdate(mutationFn) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    meta: { silent: true },
+    mutationFn,
+    onSuccess: ({ license }) => {
+      if (!license?._id) return
+      queryClient.setQueryData(qk.licenses.detail(license._id), license)
+      patchList(queryClient, (licenses) => licenses.map((item) => (item._id === license._id ? license : item)))
+    },
+  })
+}
+
+export function useSetLicensePaused() {
+  return useLicenseUpdate(({ id, paused }) => licensesApi.setLicensePaused(id, paused))
+}
+
+export function useRequestLicenseTerms() {
+  return useLicenseUpdate((id) => licensesApi.requestLicenseTerms(id))
+}
+
+export function useCancelLicenseTerms() {
+  return useLicenseUpdate((id) => licensesApi.cancelLicenseTermsRequest(id))
+}

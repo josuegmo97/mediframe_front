@@ -8,17 +8,24 @@ const normalize = (value) => String(value ?? '').toLowerCase()
 
 export const EXPIRING_SOON_DAYS = 7
 
+/** Pausada por un administrador: la app la trata como "cuenta en mantenimiento". */
+export function isLicensePaused(license, now = Date.now()) {
+  return Boolean(license?.paused) && effectiveLicenseStatus(license, now) === LICENSE_STATUS.IN_USE
+}
+
 export function isExpiringSoon(license, now = Date.now()) {
   const days = licenseDaysRemaining(license, now)
   return days != null && days <= EXPIRING_SOON_DAYS
 }
 
-/** Filtro en cliente. estado: '' | '1' | '2' | '3'; dias: '' | número; pronto: '' | '1'. */
+/** Filtro en cliente. estado: '' | '1' | '2' | '3' | 'pausada'; dias: '' | número; pronto: '' | '1'. */
 export function filterLicenses(licenses, { q = '', estado = '', dias = '', pronto = '' } = {}, now = Date.now()) {
   const query = normalize(q).trim()
   return (licenses ?? []).filter((license) => {
     const status = effectiveLicenseStatus(license, now)
-    if (estado !== '' && String(status) !== String(estado)) return false
+    if (estado === 'pausada') {
+      if (!isLicensePaused(license, now)) return false
+    } else if (estado !== '' && String(status) !== String(estado)) return false
     if (dias !== '' && String(license.days_permission) !== String(dias)) return false
     if (pronto === '1' && !isExpiringSoon(license, now)) return false
     if (!query) return true
@@ -56,7 +63,7 @@ export function distinctDays(licenses) {
 export function licensesToCsv(licenses) {
   return toCsv(licenses, [
     { header: 'CÓDIGO', accessor: (l) => formatLicenseCode(l.code) },
-    { header: 'ESTADO', accessor: (l) => licenseStatusMeta(effectiveLicenseStatus(l)).label },
+    { header: 'ESTADO', accessor: (l) => (isLicensePaused(l) ? 'Pausada' : licenseStatusMeta(effectiveLicenseStatus(l)).label) },
     { header: 'DÍAS', accessor: 'days_permission' },
     { header: 'DÍAS RESTANTES', accessor: (l) => licenseDaysRemaining(l) ?? '' },
     { header: 'EXPIRA', accessor: (l) => formatDateTime(l.expired_at) },

@@ -16,6 +16,7 @@ export function LicensesFilters({ filters, setFilter, reset, isDirty, days, resu
           { value: '', label: 'Todos los estados' },
           { value: '1', label: 'Disponibles' },
           { value: '2', label: 'En uso' },
+          { value: 'pausada', label: 'Pausadas' },
           { value: '3', label: 'Expiradas' },
         ]}
       />
